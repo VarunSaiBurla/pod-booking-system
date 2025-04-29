@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import datetime
 import os
+import yagmail
 
 # ----------------------
 # Initialize Data
@@ -31,6 +32,12 @@ else:
     bookings = pd.DataFrame(columns=["pod_id", "pod_name", "guest_count", "start_time", "end_time", "email"])
 
 # ----------------------
+# Email Configuration
+# ----------------------
+sender_email = os.getenv("SENDER_EMAIL")
+sender_app_password = os.getenv("SENDER_APP_PASSWORD")
+
+# ----------------------
 # Streamlit App
 # ----------------------
 
@@ -48,13 +55,14 @@ pod_name = st.selectbox("Select a Pod:", [pod["name"] for pod in filtered_pods])
 
 booking_date = st.date_input("Select Date:", min_value=datetime.date.today())
 booking_start_time = st.time_input("Select Start Time:", value=datetime.time(9, 0))
+booking_end_time = st.time_input("Select End Time:", value=(datetime.datetime.combine(datetime.date.today(), booking_start_time) + datetime.timedelta(minutes=60)).time())
 email = st.text_input("Enter your Email:")
 
 # Submission button
 if st.button("Book Now"):
     selected_pod = next(pod for pod in pods if pod["name"] == pod_name)
     start_datetime = datetime.datetime.combine(booking_date, booking_start_time)
-    end_datetime = start_datetime + datetime.timedelta(minutes=60)
+    end_datetime = datetime.datetime.combine(booking_date, booking_end_time)
     buffer_end_time = end_datetime + datetime.timedelta(minutes=10)
 
     # Validation: Prevent single guests from booking big pods
@@ -87,8 +95,17 @@ if st.button("Book Now"):
             bookings = pd.concat([bookings, new_booking], ignore_index=True)
             bookings.to_csv(BOOKINGS_FILE, index=False)
 
-            st.success(f"Booking Confirmed for {pod_name} on {booking_date} at {booking_start_time}!")
-            st.info("A confirmation will be sent to your email (optional to implement)")
+            st.success(f"Booking Confirmed for {pod_name} on {booking_date} from {booking_start_time} to {booking_end_time}!")
+
+            # Send Confirmation Email
+            subject = "Your Pod Booking Confirmation"
+            content = f"Hi,\n\nYour booking for {pod_name} on {booking_date} from {booking_start_time} to {booking_end_time} is confirmed.\n\nThank you!"
+            try:
+                yag = yagmail.SMTP(user=sender_email, password=sender_app_password)
+                yag.send(to=email, subject=subject, contents=content)
+                st.success("Confirmation email sent successfully!")
+            except Exception as e:
+                st.warning(f"Could not send email: {e}")
 
 # ----------------------
 # Admin Section
