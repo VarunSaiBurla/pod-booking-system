@@ -34,7 +34,7 @@ else:
 # Streamlit App
 # ----------------------
 
-st.title("\ud83c\udfe2 PodQuest: Pod Booking System")
+st.title("PodQuest: Pod Booking System")
 st.write("Easily book your office pods based on your meeting size!")
 
 # User Input
