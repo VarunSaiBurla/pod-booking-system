@@ -38,7 +38,7 @@ st.title("PodQuest: Pod Booking System")
 st.write("Easily book your office pods based on your meeting size!")
 
 # User Input
-st.header("\ud83d\udd22 Booking Form")
+st.header("Booking Form")
 guest_count = st.number_input("Number of Guests:", min_value=1, max_value=6, step=1)
 
 # Filter available pods
@@ -51,7 +51,7 @@ booking_start_time = st.time_input("Select Start Time:", value=datetime.time(9, 
 email = st.text_input("Enter your Email:")
 
 # Submission button
-if st.button("\ud83d\udcce Book Now"):
+if st.button("Book Now"):
     selected_pod = next(pod for pod in pods if pod["name"] == pod_name)
     start_datetime = datetime.datetime.combine(booking_date, booking_start_time)
     end_datetime = start_datetime + datetime.timedelta(minutes=60)
@@ -59,7 +59,7 @@ if st.button("\ud83d\udcce Book Now"):
 
     # Validation: Prevent single guests from booking big pods
     if guest_count == 1 and selected_pod["capacity"] > 2:
-        st.error("\u274c Single guests cannot book Big Pods. Please choose a smaller pod.")
+        st.error("Single guests cannot book Big Pods. Please choose a smaller pod.")
     else:
         # Check for time conflicts
         conflict = bookings[
@@ -71,9 +71,9 @@ if st.button("\ud83d\udcce Book Now"):
         ]
 
         if not conflict.empty:
-            st.error("\u274c This pod is already booked during that time. Please choose a different time or pod.")
+            st.error("This pod is already booked during that time. Please choose a different time or pod.")
         elif email == "":
-            st.error("\u274c Please enter your email to confirm the booking.")
+            st.error("Please enter your email to confirm the booking.")
         else:
             # Save booking
             new_booking = pd.DataFrame([{
@@ -87,13 +87,13 @@ if st.button("\ud83d\udcce Book Now"):
             bookings = pd.concat([bookings, new_booking], ignore_index=True)
             bookings.to_csv(BOOKINGS_FILE, index=False)
 
-            st.success(f"\ud83c\udf89 Booking Confirmed for {pod_name} on {booking_date} at {booking_start_time}!")
-            st.info("\u2709\ufe0f A confirmation will be sent to your email (optional to implement)")
+            st.success(f"Booking Confirmed for {pod_name} on {booking_date} at {booking_start_time}!")
+            st.info("A confirmation will be sent to your email (optional to implement)")
 
 # ----------------------
 # Admin Section
 # ----------------------
 
-st.sidebar.header("\ud83d\udcca Admin: View Bookings")
+st.sidebar.header("Admin: View Bookings")
 if st.sidebar.checkbox("Show all bookings"):
     st.sidebar.dataframe(bookings.sort_values(by="start_time"))
